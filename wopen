@@ -1,0 +1,70 @@
+#!/bin/bash
+
+workspaces=.termws
+basedir=~/projects/printing
+
+
+#Opens a terminal
+function open_term
+{
+    if [ -z "$3" ]; then
+        nohup gnome-terminal --working-directory=$1 -e "bash -c 'PROFILE=$2 exec bash'"
+    else
+        nohup gnome-terminal --working-directory=$1 -e "vim "$3" -S .session.vim"
+    fi
+}
+
+#Takes [working directory] [workspace name] [vim session]
+#and opens 3 terminals with matching bash profiles
+function open_workspace
+{
+    name=$1
+    dir=$basedir/$name
+    cd $dir
+
+    ./$name.py
+    openscad $name.scad &
+
+    open_term $dir $name'vim' $name.py
+}
+
+
+#Uses the current directory to create a workspace with the
+#given name
+function make_workspace
+{
+    echo "Workspace Name: "
+    read name
+
+    dir=$basedir/$name
+
+
+    if [ -e $dir ]; then
+        echo "Workspace exists."
+    else
+        mkdir $dir
+        cd $dir
+
+        sed 's/NAME/'$name'/g' ../template.py > ./$name.py
+        chmod +x ./$name.py
+        ./$name.py
+
+        git init
+        git add $name.py
+        git commit -am "Initial Commit"
+        echo "Created workspace "$name
+    fi
+}
+
+if [ -z $1 ]; then
+    cat $workspaces
+elif [ $1 == 'make' ]; then
+    make_workspace
+elif [ $1 == 'list' ]; then
+    cat $workspaces
+else
+    name=${1%%$'/'}
+
+    open_workspace $name
+    cd $name
+fi
