@@ -12,6 +12,8 @@ class Model():
     """
 
     fn = 100
+    name = 'MODEL'
+    _skip = False
 
     def __init__(self):
         pass
@@ -24,11 +26,17 @@ class Model():
         return box([1,1,1])
 
 
-    def write_stl(filename):
+    def write_stl(self, filename):
+        if self._skip:
+            print('Skipping part {}'.format(self.name))
+            return
+        print('Rendering part {}'.format(self.name))
         start = time.time()
         scad_render_to_file(self.render(), 'temp.scad')
         with open('temp.scad', 'a') as f:
             f.write('$fn={};\n'.format(self.fn))
+        filename = self.name+'.stl'
+        print('Rendering to file {}'.format(filename))
         subprocess.call(['openscad', '-o', filename, 'temp.scad'])
         end = time.time()
         print('Finished in {}s'.format(end-start))
