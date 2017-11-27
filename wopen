@@ -49,6 +49,8 @@ function make_workspace
         chmod +x ./$name.py
         ./$name.py
 
+        touch __init__.py
+
         git init
         git add $name.py
         git commit -am "Initial Commit"
