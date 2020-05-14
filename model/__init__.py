@@ -90,8 +90,11 @@ class Model():
         print('Rendering part {}'.format(self.name))
         start = time.time()
         scad_render_to_file(self.render(), 'temp.scad')
-        with open('temp.scad', 'a') as f:
+        with open('temp.scad', 'r') as f:
+            raw = f.read()
+        with open('temp.scad', 'w') as f:
             f.write('$fn={};\n'.format(self.fn))
+            f.write(raw)
         filename = self.name+'.stl'
         print('Rendering to file {}'.format(filename))
         subprocess.call(['openscad', '-o', filename, 'temp.scad'])
