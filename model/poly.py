@@ -1,6 +1,7 @@
 from solid import *
 from solid.utils import *
 import numbers
+from math import cos, sin
 
 def arc(r, off=(0,0), a1 = 0, a=2*3.14, N=32):
     a = float(a)

@@ -100,5 +100,5 @@ class Model():
         subprocess.call(['openscad', '-o', filename, 'temp.scad'])
         end = time.time()
         print('Finished in {}s'.format(end-start))
-        
+
 

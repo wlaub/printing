@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 workspaces=.termws
-basedir=~/projects/printing
+basedir=/home/wlaub/printing/printing
 
 
 #Opens a terminal
@@ -20,12 +21,13 @@ function open_workspace
 {
     name=$1
     dir=$basedir/$name
+    . venv/bin/activate
     cd $dir
 
-    ./$name.py
+    python $name.py
     openscad $name.scad &
 
-    open_term $dir $name'vim' $name.py
+#    open_term $dir $name'vim' $name.py
 }
 
 
@@ -42,6 +44,7 @@ function make_workspace
     if [ -e $dir ]; then
         echo "Workspace exists."
     else
+        . venv/bin/activate
         mkdir $dir
         cd $dir
 
@@ -51,9 +54,9 @@ function make_workspace
 
         touch __init__.py
 
-        git init
+#        git init
         git add $name.py
-        git commit -am "Initial Commit"
+#        git commit -am "Initial Commit"
         echo "Created workspace "$name
     fi
 }
