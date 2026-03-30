@@ -1,9 +1,13 @@
-from solid import *
-from solid.utils import *
 import time, sys, os
 import subprocess
 import inspect
 import re
+import functools
+
+from types import SimpleNamespace
+
+from solid import *
+from solid.utils import *
 
 def _fill(dname):
     def fill_real(function):
@@ -100,5 +104,44 @@ class Model():
         subprocess.call(['openscad', '-o', filename, 'temp.scad'])
         end = time.time()
         print('Finished in {}s'.format(end-start))
+
+def inject(base_method):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            base_vars = vars(base_method(self))
+            # inject into the function's globals temporarily
+            func.__globals__.update(base_vars)
+            try:
+                return func(self, *args, **kwargs)
+            finally:
+                for k in base_vars:
+                    func.__globals__.pop(k, None)
+        return wrapper
+    return decorator
+
+def extract(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        import inspect, dis
+        # just run the function and capture locals via a trace
+        local_vars = {}
+
+        def tracer(frame, event, arg):
+            if event == 'return':
+                local_vars.update(frame.f_locals)
+            return tracer
+
+        import sys
+        sys.settrace(tracer)
+        func(*args, **kwargs)
+        sys.settrace(None)
+
+        # strip 'self' and any other args
+        sig = inspect.signature(func)
+        exclude = set(sig.parameters.keys())
+        result = {k: v for k, v in local_vars.items() if k not in exclude}
+        return SimpleNamespace(**result)
+    return wrapper
 
 
